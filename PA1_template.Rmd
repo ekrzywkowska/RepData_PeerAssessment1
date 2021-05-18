@@ -1,25 +1,114 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "PA1_template"
+author: "Ewa"
+date: "18/05/2021"
+output: html_document
+ 
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+This is an R markdown document, created for the Coursera: Reproduciable Research Peer Assessment 1. 
+The assignment requires students to write an R markdown document evidencing literate programming, using markdown and R programming techniques. There are 5 primary questions to be answered, dealing with processing and analysing data. The data provided to be worked upon, is called "activity monitoring data".
+
+## Data used in the analysis
+Data used in the anaysis is collected from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+### The Assigment
 
 
 ## Loading and preprocessing the data
 
+```{r}
+activity=read.csv("activity.csv", stringsAsFactors = FALSE)
+str(activity)
+activity$date <- as.Date(activity$date, "%Y-%m-%d")
+head(activity)
+```
 
 
 ## What is mean total number of steps taken per day?
 
+Calculate the total number of steps taken per day. Ignore NAs
+```{r}
+library(dplyr)
+steps <- aggregate(steps~date, data=activity, sum)
+```
 
+Making a histogram of the total number of steps taken each day:
+```{r, echo=FALSE}
+hist(steps$steps,breaks = 25, col ="red", xlab ="Total number of steps", main="Histogram of total number of steps taken per day")
+```
+Calculate the mean and median of the total number of steps taken per day:
+```{r}
+mean(steps$steps)
+median(steps$steps)
+```
 
-## What is the average daily activity pattern?
+## What is the average daily acitivity pattern?
 
+Calculate the average daily pattern
+```{r}
+steps_ave <- aggregate(steps~interval, activity,mean)
+```
 
+Time series plot of 5 minut intervals and average number od steps taken
+```{r, echo = FALSE}
+plot(steps_ave$interval,steps_ave$steps, type="l",col="red", xlab="5-minute interval", ylab="Number of steps", main = "Average number of steps per day per interval")
+```
+
+5-minute interval with the maxium number of steps (on average)
+```{r}
+steps_ave[which.max(steps_ave$steps),1]
+```
 
 ## Imputing missing values
 
+Total number of missing values in the dataset
+```{r}
+anyNA(activity)
+sum(is.na(activity))
+colSums(is.na(activity))
+```
+Imputing missing values with mean for that 5-minute interval
+```{r}
+activity$CompleteSteps = ifelse(is.na(activity$steps), round(steps_ave$steps[match(activity$interval, steps_ave$interval)],0),activity$steps)
+```
+Create new dataset with filled missing values
+```{r}
+activity_new = data.frame(steps = activity$CompleteSteps, interval = activity$interval, date = activity$date)
+head(activity_new)
+```
+Make a histogram of the total number of steps taken each day
+```{r, echo = FALSE}
+steps <- aggregate(steps~date, data=activity_new, sum)
+
+hist(steps$steps,breaks = 25, col ="blue", xlab ="Total number of steps", main="Histogram of total number of steps taken per day (removed NAs)")
+```
+Calculate the mean and median of the total number of steps taken per day:
+```{r}
+mean(steps$steps)
+median(steps$steps)
+```
 
 
-## Are there differences in activity patterns between weekdays and weekends?
+## Are there differences in activity patterns between weekdays & weekends?
+
+Create factors to stora the weekdays & weekends
+```{r}
+activity_new$weekday = weekdays(activity_new$date)
+activity_new$Day = ifelse(activity_new$weekday =="Saturday" | activity_new$weekday =="Sunday","weekend","weekday")
+head(activity_new)
+```
+Create plots for weekends and weekdays for averaged number of steps taken per day per 5-minute intervals
+```{r, echo = FALSE}
+steps_ave_W = aggregate(steps~interval + Day, activity_new, mean)
+
+library(ggplot2)
+ggplot(steps_ave_W, aes(interval,steps)) +
+  geom_line(col="red") + facet_grid(Day ~.) +
+  ggtitle("Average steps per 5-minute interval:weekday vs.weekends")
+```
