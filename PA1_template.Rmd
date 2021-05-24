@@ -1,8 +1,9 @@
 ---
 title: "PA1_template"
 author: "Ewa"
-date: "18/05/2021"
+date: "24/05/2021"
 output: html_document
+
  
 ---
 
@@ -29,7 +30,6 @@ activity$date <- as.Date(activity$date, "%Y-%m-%d")
 head(activity)
 ```
 
-
 ## What is mean total number of steps taken per day?
 
 Calculate the total number of steps taken per day. Ignore NAs
@@ -42,6 +42,7 @@ Making a histogram of the total number of steps taken each day:
 ```{r, echo=FALSE}
 hist(steps$steps,breaks = 25, col ="red", xlab ="Total number of steps", main="Histogram of total number of steps taken per day")
 ```
+
 Calculate the mean and median of the total number of steps taken per day:
 ```{r}
 mean(steps$steps)
@@ -88,6 +89,7 @@ steps <- aggregate(steps~date, data=activity_new, sum)
 
 hist(steps$steps,breaks = 25, col ="blue", xlab ="Total number of steps", main="Histogram of total number of steps taken per day (removed NAs)")
 ```
+
 Calculate the mean and median of the total number of steps taken per day:
 ```{r}
 mean(steps$steps)
